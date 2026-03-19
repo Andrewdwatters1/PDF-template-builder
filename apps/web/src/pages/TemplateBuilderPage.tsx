@@ -17,6 +17,7 @@ export default function TemplateBuilderPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saved' | 'error'>('idle');
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
 
   // Load document info
@@ -78,6 +79,7 @@ export default function TemplateBuilderPage() {
     if (!documentId) return;
     setSaving(true);
     setSaveStatus('idle');
+    setSaveError(null);
     try {
       const result = await apiFetch<DocumentTemplate>('/templates', {
         method: 'POST',
@@ -87,8 +89,9 @@ export default function TemplateBuilderPage() {
       setActiveTemplateId(result.id);
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
-    } catch {
+    } catch (e) {
       setSaveStatus('error');
+      setSaveError((e as Error).message);
     } finally {
       setSaving(false);
     }
@@ -134,7 +137,9 @@ export default function TemplateBuilderPage() {
           {saving ? 'Saving…' : saveStatus === 'saved' ? '✓ Saved' : 'Save Template'}
         </button>
         {saveStatus === 'error' && (
-          <span style={{ fontSize: 12, color: '#dc2626' }}>Save failed</span>
+          <span style={{ fontSize: 12, color: '#dc2626' }} title={saveError ?? undefined}>
+            Save failed{saveError ? `: ${saveError}` : ''}
+          </span>
         )}
       </div>
 

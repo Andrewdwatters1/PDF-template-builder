@@ -24,7 +24,7 @@ export default function NavBar() {
       <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--color-accent)', marginRight: 8 }}>
         PDF Builder
       </span>
-      <NavLink to="/documents" style={linkStyle}>Documents</NavLink>
+      <NavLink to="/documents" end style={linkStyle}>Documents</NavLink>
       <NavLink to="/documents/new" style={linkStyle}>Upload</NavLink>
       <NavLink to="/fields" style={linkStyle}>Fields</NavLink>
     </nav>
