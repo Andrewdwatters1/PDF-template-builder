@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import React from 'react';
 import { TemplateFieldPlacement } from '@pdf-builder/shared';
 import { FIELD_TYPE_COLORS } from '../constants/fieldColors';
 
@@ -13,7 +13,6 @@ interface Props {
 export default function PlacedFieldOverlay({ field, overlayRef, onMove, onResize, onDelete }: Props) {
   const colors = FIELD_TYPE_COLORS[field.type];
   const fieldId = field.id!;
-  const hoverRef = useRef(false);
 
   function handleMoveMouseDown(e: React.MouseEvent) {
     e.stopPropagation();
