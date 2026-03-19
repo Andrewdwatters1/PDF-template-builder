@@ -71,7 +71,7 @@ export async function signRoutes(app: FastifyInstance) {
     const pages = pdfDoc.getPages();
 
     for (const rawField of rawFields ?? []) {
-      const fd = rawField.field_definitions as Record<string, unknown>;
+      const fd = rawField.field_definitions as unknown as Record<string, unknown>;
       const fieldId = fd?.field_id as string;
       const fieldType = fd?.type as string;
       const value = fieldValues[fieldId];

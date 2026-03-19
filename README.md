@@ -80,15 +80,22 @@ Open [http://localhost:5173](http://localhost:5173)
 
 ## Deployment
 
-**API → Railway**
-- Build command: `pnpm --filter api build`
-- Start command: `node dist/server.js`
-- Set all env vars in Railway dashboard
+Both services are configured via committed config files — no manual build settings needed in the dashboards.
 
-**Frontend → Vercel**
-- Build command: `pnpm --filter web build`
-- Output directory: `apps/web/dist`
-- Set `VITE_API_URL` to your Railway API URL
+**API → Render** (`render.yaml`)
+1. render.com → New → Web Service → connect this repo
+2. Render auto-detects `render.yaml`
+3. Set env vars in dashboard: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `CORS_ORIGIN` (Vercel URL)
+4. `PORT` is injected automatically — do not set it
+
+> Free tier note: service spins down after 15 min of inactivity; first request after sleep takes ~50s.
+
+**Frontend → Vercel** (`vercel.json`)
+1. vercel.com → New Project → connect this repo
+2. Vercel auto-detects `vercel.json`
+3. Set env var: `VITE_API_URL` = your Render service URL
+
+**After both are live:** update `CORS_ORIGIN` in Render to your Vercel URL, then redeploy.
 
 ## Custom Field IDs
 
