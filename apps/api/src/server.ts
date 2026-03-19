@@ -1,4 +1,7 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import path from 'path';
+// Resolve .env from the monorepo root regardless of cwd (Turbo runs from apps/api/)
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
