@@ -1,7 +1,6 @@
 [build]
 builder = "nixpacks"
-buildCommand = "pnpm install && pnpm --filter @pdf-builder/shared build && 
-pnpm --filter api build"
+buildCommand = "pnpm install && pnpm --filter @pdf-builder/shared build && pnpm --filter api build"
 
 [deploy]
 startCommand = "node apps/api/dist/server.js"
