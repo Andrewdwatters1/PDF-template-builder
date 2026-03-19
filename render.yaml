@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: pdf-template-builder-api
+    runtime: node
+    buildCommand: pnpm install && pnpm --filter @pdf-builder/shared build && pnpm --filter api build
+    startCommand: node apps/api/dist/server.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
