@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DocumentRecord } from '@pdf-builder/shared';
 
-const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3001';
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) || 'http://localhost:3001';
 
 export default function UploadPage() {
   const navigate = useNavigate();
