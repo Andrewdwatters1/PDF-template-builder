@@ -6,7 +6,7 @@ import PdfCanvas from '../components/PdfCanvas';
 import FieldPalette from '../components/FieldPalette';
 import FieldsSidebar from '../components/FieldsSidebar';
 
-const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3001';
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) || 'http://localhost:3001';
 
 export default function TemplateBuilderPage() {
   const { id: documentId } = useParams<{ id: string }>();
