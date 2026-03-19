@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { FieldDefinition } from '@pdf-builder/shared';
-import { apiFetch } from '../api/client';
+import { apiFetch, getFieldDefsHeaders } from '../api/client';
 import { FIELD_TYPE_COLORS } from '../constants/fieldColors';
 
 export default function FieldDefinitionsPage() {
@@ -21,7 +21,7 @@ export default function FieldDefinitionsPage() {
   }, []);
 
   function loadFields() {
-    apiFetch<FieldDefinition[]>('/field-definitions')
+    apiFetch<FieldDefinition[]>('/field-definitions', { headers: getFieldDefsHeaders() })
       .then(setFields)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
@@ -31,7 +31,7 @@ export default function FieldDefinitionsPage() {
     if (!confirm('Delete this field definition? This will not affect existing templates.')) return;
     setDeleting(id);
     try {
-      await apiFetch(`/field-definitions/${id}`, { method: 'DELETE' });
+      await apiFetch(`/field-definitions/${id}`, { method: 'DELETE', headers: getFieldDefsHeaders() });
       setFields((prev) => prev.filter((f) => f.id !== id));
     } catch (e) {
       alert((e as Error).message);
@@ -45,15 +45,15 @@ export default function FieldDefinitionsPage() {
     setAddError(null);
     setAdding(true);
     try {
-      const created = await apiFetch<FieldDefinition>('/field-definitions', {
+      await apiFetch<{ count: number }>('/field-definitions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fieldId: newFieldId, label: newLabel, type: newType }),
+        headers: { 'Content-Type': 'application/json', ...getFieldDefsHeaders() },
+        body: JSON.stringify([{ field_id: newFieldId, label: newLabel, type: newType }]),
       });
-      setFields((prev) => [...prev, created]);
       setNewFieldId('');
       setNewLabel('');
       setNewType('text');
+      loadFields();
     } catch (e) {
       setAddError((e as Error).message);
     } finally {

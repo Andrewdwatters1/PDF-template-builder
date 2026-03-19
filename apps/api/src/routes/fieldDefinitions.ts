@@ -1,18 +1,25 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import supabase from '../supabase';
 
-const CreateFieldSchema = z.object({
-  fieldId: z.string().min(1).regex(/^[a-z0-9_]+$/, 'fieldId must be lowercase letters, numbers, and underscores only'),
+const ExternalFieldSchema = z.array(z.object({
+  field_id: z.string().min(1),
   label: z.string().min(1),
   type: z.enum(['text', 'signature', 'date', 'metadata', 'custom']),
-  defaultWidth: z.number().min(0.01).max(1).optional(),
-  defaultHeight: z.number().min(0.01).max(1).optional(),
-});
+}));
+
+function validateApiKey(request: FastifyRequest, reply: FastifyReply, done: () => void) {
+  const apiKey = process.env.FIELD_DEFINITIONS_API_KEY;
+  if (!apiKey || request.headers['x-api-key'] !== apiKey) {
+    reply.status(401).send({ error: 'Unauthorized' });
+    return;
+  }
+  done();
+}
 
 export async function fieldDefinitionRoutes(app: FastifyInstance) {
   // GET /field-definitions
-  app.get('/field-definitions', async (_request, reply) => {
+  app.get('/field-definitions', { preHandler: validateApiKey }, async (_request, reply) => {
     const { data, error } = await supabase
       .from('field_definitions')
       .select('*')
@@ -26,40 +33,36 @@ export async function fieldDefinitionRoutes(app: FastifyInstance) {
     return reply.send((data ?? []).map(toFieldDefinition));
   });
 
-  // POST /field-definitions
-  app.post('/field-definitions', async (request, reply) => {
-    const parsed = CreateFieldSchema.safeParse(request.body);
+  // POST /field-definitions — accepts an array, upserts on field_id
+  app.post('/field-definitions', { preHandler: validateApiKey }, async (request, reply) => {
+    const parsed = ExternalFieldSchema.safeParse(request.body);
     if (!parsed.success) {
       return reply.status(400).send({ error: parsed.error.issues[0]?.message ?? 'Invalid input' });
     }
 
-    const { fieldId, label, type, defaultWidth = 0.25, defaultHeight = 0.03 } = parsed.data;
+    const rows = parsed.data.map(({ field_id, label, type }) => ({
+      field_id,
+      label,
+      type,
+      category: 'custom',
+      default_width: 0.25,
+      default_height: 0.03,
+    }));
 
     const { data, error } = await supabase
       .from('field_definitions')
-      .insert({
-        field_id: fieldId,
-        label,
-        type,
-        category: 'custom',
-        default_width: defaultWidth,
-        default_height: defaultHeight,
-      })
-      .select()
-      .single();
+      .upsert(rows, { onConflict: 'field_id' })
+      .select();
 
     if (error) {
-      if (error.code === '23505') {
-        return reply.status(409).send({ error: `Field ID "${fieldId}" already exists` });
-      }
       return reply.status(500).send({ error: error.message });
     }
 
-    return reply.status(201).send(toFieldDefinition(data));
+    return reply.send({ count: (data ?? []).length });
   });
 
   // DELETE /field-definitions/:id
-  app.delete<{ Params: { id: string } }>('/field-definitions/:id', async (request, reply) => {
+  app.delete<{ Params: { id: string } }>('/field-definitions/:id', { preHandler: validateApiKey }, async (request, reply) => {
     const { id } = request.params;
 
     const { data: field, error: fetchError } = await supabase
