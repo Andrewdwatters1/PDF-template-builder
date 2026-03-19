@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { TemplateFieldPlacement } from '@pdf-builder/shared';
 import { FIELD_TYPE_COLORS } from '../constants/fieldColors';
 
@@ -8,8 +9,16 @@ interface Props {
 }
 
 export default function FieldsSidebar({ fields, currentPage, onDelete }: Props) {
+  const [copied, setCopied] = useState(false);
   const currentPageFields = fields.filter((f) => f.page === currentPage);
   const otherFields = fields.filter((f) => f.page !== currentPage);
+
+  function handleCopy() {
+    navigator.clipboard.writeText(JSON.stringify(fields, null, 2)).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, height: '100%', overflow: 'auto' }}>
@@ -42,8 +51,25 @@ export default function FieldsSidebar({ fields, currentPage, onDelete }: Props) 
       )}
 
       <div>
-        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
-          Template JSON
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Template JSON
+          </div>
+          <button
+            onClick={handleCopy}
+            style={{
+              border: '1px solid var(--color-border-tertiary)',
+              background: 'var(--color-background-tertiary)',
+              color: copied ? 'var(--color-accent)' : 'var(--color-text-tertiary)',
+              borderRadius: 4,
+              padding: '2px 6px',
+              fontSize: 10,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+            }}
+          >
+            {copied ? 'Copied!' : 'Copy'}
+          </button>
         </div>
         <pre style={{
           fontSize: 10,
